@@ -1,0 +1,5 @@
+﻿@Master['_Master']
+@Section['Content']
+<h1>Dns</h1>
+<p>Your current IP is: @Model.CurrentIp</p>
+@EndSection

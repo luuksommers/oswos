@@ -1,0 +1,6 @@
+﻿@Master['_Master']
+
+@Section['Content']
+<h1>Home</h1>
+Thanks for trying out the Oswos project.
+@EndSection

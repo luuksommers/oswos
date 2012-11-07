@@ -1,0 +1,24 @@
+﻿@Master['_Master']
+
+@Section['Content']
+<h1>Websites</h1>
+
+@Each.Websites
+<form method="post">
+<input type="hidden" name="Id" id="Id_@Current.Id" value="@Current.Id">
+<input type="text" name="Name" id="Name_@Current.Id" value="@Current.Name">
+<input type="text" name="HostName" id="HostName_@Current.Id" value="@Current.HostName">
+<input type="text" name="Path" id="Path_@Current.Id" value="@Current.Path">
+<input type="submit" value="Save" />
+</form>
+@EndEach
+
+<form method="post">
+<input type="hidden" name="Id" id="Id_0" value="0">
+<input type="text" name="Name" id="Name_0" value="">
+<input type="text" name="HostName" id="HostName_0" value="">
+<input type="text" name="Path" id="Path_0" value="">
+<input type="submit" value="Save" />
+</form>
+
+@EndSection
