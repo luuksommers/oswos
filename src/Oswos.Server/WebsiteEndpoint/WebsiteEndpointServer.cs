@@ -9,11 +9,11 @@ namespace Oswos.Server.WebsiteEndpoint
 {
     public class WebsiteEndpointServer : IDisposable
     {
-        private readonly WebsiteRepository _repository;
+        private readonly IWebsiteRepository _repository;
         private readonly List<WebsiteEndpoint> _websiteEndpoints;
         private readonly List<AppDomain> _appDomains;
 
-        public WebsiteEndpointServer(WebsiteRepository repository)
+        public WebsiteEndpointServer(IWebsiteRepository repository)
         {
             _repository = repository;
             _websiteEndpoints = new List<WebsiteEndpoint>();

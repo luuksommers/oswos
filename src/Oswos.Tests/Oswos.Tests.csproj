@@ -50,7 +50,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="Server\HttpStreamConverterTests.cs" />
+    <Compile Include="Server\HttpStreamTests.cs" />
     <Compile Include="Server\TcpServerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

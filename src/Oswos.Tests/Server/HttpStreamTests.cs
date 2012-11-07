@@ -6,7 +6,7 @@ namespace Oswos.Tests.Server
 {
 
     [TestClass]
-    public class HttpStreamConverterTests
+    public class HttpStreamTests
     {
         [TestMethod]
         public void HttpStreamConverter_Parses_Method()

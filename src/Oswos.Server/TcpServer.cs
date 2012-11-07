@@ -33,7 +33,6 @@ namespace Oswos.Server
             while (_serverRunning)
             {
                 var tcpClient = await tcpServer.AcceptTcpClientAsync();
-                Console.WriteLine("{0} Connected", tcpClient.Client.RemoteEndPoint);
                 ProcessClient(tcpClient);
             }
         }
