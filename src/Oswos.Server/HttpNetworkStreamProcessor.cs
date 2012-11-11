@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.ServiceModel;
 using System.Text;
+using NLog;
 using Oswos.Repository;
 using Oswos.Server.WebsiteAdapter;
 
@@ -9,11 +11,19 @@ namespace Oswos.Server
 {
     public class HttpNetworkStreamProcessor : INetworkStreamProcessor
     {
-        private IWebsiteRepository _repository;
+        private readonly IWebsiteRepository _repository;
+        static readonly Dictionary<string, ChannelFactory<IWebsiteAdapter>> FactoryCache = new Dictionary<string, ChannelFactory<IWebsiteAdapter>>();
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         public HttpNetworkStreamProcessor(IWebsiteRepository repository)
         {
             _repository = repository;
+            foreach (var website in repository.GetAll())
+            {
+                FactoryCache.Add(website.HostName, new ChannelFactory<IWebsiteAdapter>(
+                         new NetNamedPipeBinding() { MaxReceivedMessageSize = Int32.MaxValue },
+                         new EndpointAddress(string.Format("net.pipe://localhost/{0}", website.HostName))));
+            }
         }
 
         public void ProcessStream(NetworkStream tcpStream)
@@ -28,7 +38,7 @@ namespace Oswos.Server
             {
                 host = requestHttpStream.Headers["Host"];
             }
-
+            Logger.Debug("Found host {0}", host);
             var website = _repository.GetByHost(host);
             if (website == null)
             {
@@ -44,18 +54,16 @@ namespace Oswos.Server
             {
                 try
                 {
-                    using (var factory = new ChannelFactory<IWebsiteAdapter>(
-                        new NetTcpBinding() { MaxReceivedMessageSize = Int32.MaxValue },
-                        new EndpointAddress(string.Format("net.tcp://localhost:{0}/WebsiteEndpoint", 55305 + website.Id))))
-                    {
-                        var endPoint = factory.CreateChannel();
-                        var responseStream = endPoint.ParseRequest(requestHttpStream);
+                    var endPoint = FactoryCache[website.HostName].CreateChannel();
+                    Console.WriteLine("ParseRequest @ {0}", DateTime.Now);
+                    var responseStream = endPoint.ParseRequest(requestHttpStream);
+                    Console.WriteLine("ParseRequest Finished @ {0}", DateTime.Now);
 
-                        responseStream.CopyTo(tcpStream);
-                    }
+                    responseStream.CopyTo(tcpStream);
                 }
                 catch (Exception e)
                 {
+                    Logger.ErrorException("ProcessStream", e);
                     var errorMessage = Encoding.UTF8.GetBytes(requestHttpStream.HttpVersion + " 500 " + e.Message + "\x0d\x0a");
                     tcpStream.Write(errorMessage, 0, errorMessage.Length);
                 }

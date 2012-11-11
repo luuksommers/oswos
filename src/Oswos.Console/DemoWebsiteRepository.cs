@@ -6,7 +6,7 @@ namespace Oswos.Console
 {
     public class DemoWebsiteRepository : IWebsiteRepository
     {
-        List<Website> _websites = new List<Website>();
+        readonly List<Website> _websites = new List<Website>();
         public void AddOrUpdate(Website website)
         {
             if (!_websites.Contains(website))

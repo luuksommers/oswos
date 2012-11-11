@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using NLog;
 
 namespace Oswos.Server
 {
@@ -9,6 +10,7 @@ namespace Oswos.Server
         private readonly INetworkStreamProcessor _streamProcessor;
         private static bool _serverRunning = true;
         private TcpListener _tcpServer;
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         public TcpServer(INetworkStreamProcessor streamProcessor)
         {
@@ -32,13 +34,22 @@ namespace Oswos.Server
         {
             while (_serverRunning)
             {
-                var tcpClient = await tcpServer.AcceptTcpClientAsync();
-                ProcessClient(tcpClient);
+                try
+                {
+                    var tcpClient = await tcpServer.AcceptTcpClientAsync();
+                    ProcessClient(tcpClient);
+                }
+                catch (Exception exception)
+                {
+                    Logger.ErrorException("ListenForClients", exception);
+                    Console.WriteLine(exception.Message);
+                }
             }
         }
 
         private async void ProcessClient(TcpClient tcpClient)
         {
+            Console.WriteLine("Connection from {0}", tcpClient.Client.RemoteEndPoint);
             var tcpStream = tcpClient.GetStream();
 
             _streamProcessor.ProcessStream(tcpStream);
@@ -49,8 +60,10 @@ namespace Oswos.Server
                 {
                     tcpClient.Client.Disconnect(true);
                 }
-                catch (Exception)
+                catch (Exception exception)
                 {
+                    Logger.ErrorException("ProcessClient", exception);
+                    Console.WriteLine(exception.Message);
                 }
             }
         }

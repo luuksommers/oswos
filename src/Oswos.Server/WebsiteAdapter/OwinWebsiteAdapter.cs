@@ -3,13 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.ServiceModel;
 using System.Text;
+using NLog;
 
 namespace Oswos.Server.WebsiteAdapter
 {
+    [ServiceBehavior(IncludeExceptionDetailInFaults = true, InstanceContextMode = InstanceContextMode.Single, ConcurrencyMode = ConcurrencyMode.Multiple)]
     public class OwinWebsiteAdapter : IWebsiteAdapter
     {
         private readonly dynamic _website;
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         public OwinWebsiteAdapter()
         {
@@ -30,11 +34,11 @@ namespace Oswos.Server.WebsiteAdapter
             environment.Add("owin.RequestBody", stream);
 
             var headers = new Dictionary<string, string[]>(StringComparer.Ordinal);
-            foreach( var headerKey in stream.Headers.Keys)
+            foreach (var headerKey in stream.Headers.Keys)
             {
                 headers.Add(
                     headerKey,
-                    stream.Headers[headerKey].Split(',').Select(a=>a.Trim()).ToArray());
+                    stream.Headers[headerKey].Split(',').Select(a => a.Trim()).ToArray());
             }
             environment.Add("owin.RequestHeaders", headers);
 
@@ -46,6 +50,7 @@ namespace Oswos.Server.WebsiteAdapter
             }
             catch (AggregateException exception)
             {
+                Logger.DebugException("OwinWebsiteAdapter.ParseRequest", exception);
                 Set(environment, "owin.ResponseStatusCode", 500);
                 Set(environment, "owin.ResponseReasonPhrase", exception.Message);
                 Set(environment, "owin.ResponseBody", new MemoryStream(Encoding.UTF8.GetBytes(exception.InnerException.Message)));
@@ -56,7 +61,7 @@ namespace Oswos.Server.WebsiteAdapter
             var responseStatusCode = Get<int>(environment, "owin.ResponseStatusCode");
             var responseReason = Get<string>(environment, "owin.ResponseReasonPhrase");
             var responseBodyStream = Get<MemoryStream>(environment, "owin.ResponseBody");
-            
+
             var responseStream = new MemoryStream();
             WriteData(responseStream, stream.HttpVersion + " " + responseStatusCode + " " + responseReason + "\x0d\x0a");
             foreach (var header in responseHeaders.Keys)
@@ -68,14 +73,13 @@ namespace Oswos.Server.WebsiteAdapter
             WriteData(responseStream, "\x0d\x0a");
 
             responseBodyStream.Position = 0;
-            responseBodyStream.CopyToAsync(responseStream);
+            responseBodyStream.CopyTo(responseStream);
             responseStream.Position = 0;
             return responseStream;
         }
 
         private void WriteData(MemoryStream stream, string data)
         {
-            //Console.Write(data);
             var dataBytes = Encoding.UTF8.GetBytes(data);
             stream.Write(dataBytes, 0, dataBytes.Length);
         }

@@ -13,19 +13,16 @@ namespace Oswos.Server.WebsiteEndpoint
         /// 2. Create instance runnin in a servicehost
         /// 3. Return 
         /// </summary>
-        public void Start(int port, string path)
+        public void Start(string hostName)
         {
-            Environment.CurrentDirectory = path;
             var hostType = typeof(OwinWebsiteAdapter);
-            var endpointUrl = string.Format("net.tcp://localhost:{0}/WebsiteEndpoint", port);
+            var endpointUrl = string.Format("net.pipe://localhost/{0}", hostName);
             StartService(hostType, endpointUrl);
-            Console.WriteLine("Listening {0} for path {1}", endpointUrl, path);
         }
 
         private void StartService(Type hostType, string endpointUrl)
         {
             _serviceHost = CreateServiceHost(hostType, endpointUrl);
-
             _serviceHost.Open();
         }
 
@@ -34,7 +31,7 @@ namespace Oswos.Server.WebsiteEndpoint
             var serviceHost = new ServiceHost(hostType);
             serviceHost.AddServiceEndpoint(
                 typeof(IWebsiteAdapter),
-                new NetTcpBinding() { MaxReceivedMessageSize = Int32.MaxValue },
+                new NetNamedPipeBinding() { MaxReceivedMessageSize = Int32.MaxValue },
                 new Uri(endpointUrl));
 
             return serviceHost;

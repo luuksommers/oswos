@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Reflection;
+using NLog;
 using Oswos.Repository;
 
 namespace Oswos.Server.WebsiteEndpoint
@@ -12,6 +12,7 @@ namespace Oswos.Server.WebsiteEndpoint
         private readonly IWebsiteRepository _repository;
         private readonly List<WebsiteEndpoint> _websiteEndpoints;
         private readonly List<AppDomain> _appDomains;
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         public WebsiteEndpointServer(IWebsiteRepository repository)
         {
@@ -34,7 +35,7 @@ namespace Oswos.Server.WebsiteEndpoint
                     {
                         ApplicationName = website.Name,
                         ApplicationBase = website.Path,
-                        PrivateBinPath = website.Path + "\\bin",
+                        PrivateBinPath = Path.Combine(website.Path, "bin" ),
                         ConfigurationFile = Path.Combine(website.Path, "Web.config")
                     };
 
@@ -52,7 +53,8 @@ namespace Oswos.Server.WebsiteEndpoint
             _websiteEndpoints.Add(websiteEndpoint);
             _appDomains.Add(appDomain);
 
-            websiteEndpoint.Start(55305 + website.Id, website.Path);
+            Logger.Debug("Starting Wcf endpoint for host {2} on path {1}", website.Path, website.HostName);
+            websiteEndpoint.Start(website.HostName);
         }
 
         public void Stop()
@@ -65,7 +67,7 @@ namespace Oswos.Server.WebsiteEndpoint
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    Logger.DebugException("websiteEndpoint.Stop()", e);
                 }
             }
 
@@ -77,7 +79,7 @@ namespace Oswos.Server.WebsiteEndpoint
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    Logger.DebugException("AppDomain.Unload(appDomain)", e);
                 }
             }
         }

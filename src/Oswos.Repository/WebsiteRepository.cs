@@ -1,8 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Configuration;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace Oswos.Repository
 {
@@ -13,21 +10,6 @@ namespace Oswos.Repository
         public WebsiteRepository()
         {
             _database = new OswosDatabaseEntities();
-
-            if(!_database.Websites.Any(a=>a.Name=="settings"))
-            {
-                var websitePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Settings");
-                if (Directory.Exists(websitePath))
-                {
-                    AddOrUpdate(new Website()
-                                             {HostName = "localhost", Id = 100, Name = "settings", Path = websitePath});
-                }
-                websitePath = ConfigurationManager.AppSettings["oswos:SettingsWebsitePath"];
-                if (Directory.Exists(websitePath))
-                {
-                    AddOrUpdate(new Website() { HostName = "localhost", Id = 100, Name = "settings", Path = websitePath });
-                }
-            }
         }
 
         public void AddOrUpdate(Website website)
@@ -54,7 +36,7 @@ namespace Oswos.Repository
 
         public Website GetByHost(string host)
         {
-            return _database.Websites.FirstOrDefault(a => a.HostName == host);
+            return _database.Websites.FirstOrDefault(a => host.Contains(a.HostName));
         }
 
         public IEnumerable<Website> GetAll()

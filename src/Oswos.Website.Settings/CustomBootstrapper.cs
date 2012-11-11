@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Reflection;
 using Nancy;
 using Nancy.Conventions;
 
@@ -8,7 +11,7 @@ namespace Oswos.Website.Settings
         protected override void ConfigureConventions(NancyConventions conventions)
         {
             base.ConfigureConventions(conventions);
-
+            
             conventions.StaticContentsConventions.Add(
                 StaticContentConventionBuilder.AddDirectory("assets", @"assets")
                 );

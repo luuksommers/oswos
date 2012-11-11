@@ -14,7 +14,7 @@ namespace Oswos.Website.Settings.Modules
 
             Get["/dns"] = _ =>
             {
-                WebClient wc = new WebClient();
+                var wc = new WebClient();
                 string result = wc.DownloadString("http://checkip.dyndns.org/").Split(':')[1].Trim();
                 return View["Dns.sshtml", new { CurrentIp = result }];
             };

@@ -8,7 +8,7 @@ namespace Oswos.Console
 {
     class Program
     {
-        private const int DefaultPort = 9000;
+        private const int DefaultPort = 80;
         static string GetSolutionFolder()
         {
             var directory = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory);
@@ -21,25 +21,19 @@ namespace Oswos.Console
 
         static void Main(string[] args)
         {
-            System.Console.WriteLine("Starting default oswos.net server");
-            System.Console.WriteLine("Listening at port {0}", DefaultPort);
-            System.Console.WriteLine("Open a browser and connect to http://localhost:{0}", DefaultPort);
-            System.Console.WriteLine();
+            System.Console.WriteLine("Starting default oswos.net server...");
 
-            var repository = new DemoWebsiteRepository();
-            repository.AddOrUpdate(new Website()
-                                       {
-                                           HostName = "localhost", 
-                                           Id = 1, 
-                                           Name = "Settings", 
-                                           Path = Path.Combine(GetSolutionFolder(), "Oswos.Website.Settings")
-                                       });
+            var repository = new WebsiteRepository();
 
             var endpointHost = new WebsiteEndpointServer(repository);
             endpointHost.Start();
 
             var server = new TcpServer(new HttpNetworkStreamProcessor(repository));
             server.Start(DefaultPort);
+
+            System.Console.WriteLine("Listening at port {0}", DefaultPort);
+            System.Console.WriteLine("Open a browser and connect to http://localhost:{0}", DefaultPort);
+            System.Console.WriteLine();
 
             System.Console.WriteLine("Press enter to shutdown");
             System.Console.ReadLine();
