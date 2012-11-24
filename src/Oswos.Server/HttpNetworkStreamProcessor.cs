@@ -55,10 +55,7 @@ namespace Oswos.Server
                 try
                 {
                     var endPoint = FactoryCache[website.HostName].CreateChannel();
-                    Console.WriteLine("ParseRequest @ {0}", DateTime.Now);
                     var responseStream = endPoint.ParseRequest(requestHttpStream);
-                    Console.WriteLine("ParseRequest Finished @ {0}", DateTime.Now);
-
                     responseStream.CopyTo(tcpStream);
                 }
                 catch (Exception e)

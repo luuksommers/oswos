@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using NLog;
 using Oswos.Repository;
 using Oswos.Server;
 using Oswos.Server.WebsiteEndpoint;
@@ -21,7 +22,8 @@ namespace Oswos.Console
 
         static void Main(string[] args)
         {
-            System.Console.WriteLine("Starting default oswos.net server...");
+            Logger logger = LogManager.GetLogger("console");
+            logger.Info("Starting default oswos.net server...");
 
             var repository = new WebsiteRepository();
 
@@ -31,11 +33,11 @@ namespace Oswos.Console
             var server = new TcpServer(new HttpNetworkStreamProcessor(repository));
             server.Start(DefaultPort);
 
-            System.Console.WriteLine("Listening at port {0}", DefaultPort);
-            System.Console.WriteLine("Open a browser and connect to http://localhost:{0}", DefaultPort);
-            System.Console.WriteLine();
+            logger.Info("Listening at port {0}", DefaultPort);
+            logger.Info("Open a browser and connect to http://localhost:{0}", DefaultPort);
+            logger.Info(string.Empty);
 
-            System.Console.WriteLine("Press enter to shutdown");
+            logger.Info("Press enter to shutdown");
             System.Console.ReadLine();
 
             endpointHost.Stop();

@@ -56,6 +56,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="HttpNetworkStreamProcessor.cs" />
     <Compile Include="HttpStream.cs" />
     <Compile Include="WebsiteAdapter\IWebsiteAdapter.cs" />

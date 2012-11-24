@@ -72,7 +72,8 @@ namespace Oswos.Server
                             break;
 
                         var header = httpLines[headerLineIndex];
-                        Headers.Add(
+                        
+                        Headers.AddOrUpdate(
                             header.Split(':')[0],
                             header.Split(':')[1].Trim());
                     }

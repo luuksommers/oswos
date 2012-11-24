@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.ServiceModel;
 using System.Text;
+using System.Threading.Tasks;
 using NLog;
 
 namespace Oswos.Server.WebsiteAdapter
@@ -12,13 +13,14 @@ namespace Oswos.Server.WebsiteAdapter
     [ServiceBehavior(IncludeExceptionDetailInFaults = true, InstanceContextMode = InstanceContextMode.Single, ConcurrencyMode = ConcurrencyMode.Multiple)]
     public class OwinWebsiteAdapter : IWebsiteAdapter
     {
-        private readonly dynamic _website;
+        private readonly object _startupClassInstance;
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private readonly Type _startupClassType;
 
         public OwinWebsiteAdapter()
         {
-            var type = FindInterface(AppDomain.CurrentDomain.BaseDirectory);
-            _website = Activator.CreateInstance(type);
+            _startupClassType = GetOwinStartupClassType(AppDomain.CurrentDomain.BaseDirectory);
+            _startupClassInstance = Activator.CreateInstance(_startupClassType);
         }
 
         public Stream ParseRequest(HttpStream stream)
@@ -44,17 +46,8 @@ namespace Oswos.Server.WebsiteAdapter
 
             environment.Add("owin.ResponseHeaders", new Dictionary<string, string[]>(StringComparer.Ordinal));
             environment.Add("owin.ResponseBody", new MemoryStream());
-            try
-            {
-                _website.ProcessRequest(environment).Wait();
-            }
-            catch (AggregateException exception)
-            {
-                Logger.DebugException("OwinWebsiteAdapter.ParseRequest", exception);
-                Set(environment, "owin.ResponseStatusCode", 500);
-                Set(environment, "owin.ResponseReasonPhrase", exception.Message);
-                Set(environment, "owin.ResponseBody", new MemoryStream(Encoding.UTF8.GetBytes(exception.InnerException.Message)));
-            }
+
+            InvokeStartupClass(environment);
 
             //// Parse response
             var responseHeaders = Get<IDictionary<string, String[]>>(environment, "owin.ResponseHeaders");
@@ -78,6 +71,23 @@ namespace Oswos.Server.WebsiteAdapter
             return responseStream;
         }
 
+        private void InvokeStartupClass(Dictionary<string, object> environment)
+        {
+            var startupMethod = _startupClassType.GetMethod("ProcessRequest");
+            try
+            {
+                var task = (Task)startupMethod.Invoke(_startupClassInstance, new object[]{ environment});
+                task.Wait(5000);
+            }
+            catch (AggregateException exception)
+            {
+                Logger.DebugException("OwinWebsiteAdapter.ParseRequest", exception);
+                Set(environment, "owin.ResponseStatusCode", 500);
+                Set(environment, "owin.ResponseReasonPhrase", exception.Message);
+                Set(environment, "owin.ResponseBody", new MemoryStream(Encoding.UTF8.GetBytes(exception.InnerException.Message)));
+            }
+        }
+
         private void WriteData(MemoryStream stream, string data)
         {
             var dataBytes = Encoding.UTF8.GetBytes(data);
@@ -95,7 +105,7 @@ namespace Oswos.Server.WebsiteAdapter
             env[key] = value;
         }
 
-        public Type FindInterface(string path)
+        public Type GetOwinStartupClassType(string path)
         {
             if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException(path);

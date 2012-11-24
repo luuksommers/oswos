@@ -34,22 +34,14 @@ namespace Oswos.Server
         {
             while (_serverRunning)
             {
-                try
-                {
-                    var tcpClient = await tcpServer.AcceptTcpClientAsync();
-                    ProcessClient(tcpClient);
-                }
-                catch (Exception exception)
-                {
-                    Logger.ErrorException("ListenForClients", exception);
-                    Console.WriteLine(exception.Message);
-                }
+                var tcpClient = await tcpServer.AcceptTcpClientAsync();
+                ProcessClient(tcpClient);
             }
         }
 
         private async void ProcessClient(TcpClient tcpClient)
         {
-            Console.WriteLine("Connection from {0}", tcpClient.Client.RemoteEndPoint);
+            Logger.Info("Connection from {0}", tcpClient.Client.RemoteEndPoint);
             var tcpStream = tcpClient.GetStream();
 
             _streamProcessor.ProcessStream(tcpStream);
@@ -63,7 +55,6 @@ namespace Oswos.Server
                 catch (Exception exception)
                 {
                     Logger.ErrorException("ProcessClient", exception);
-                    Console.WriteLine(exception.Message);
                 }
             }
         }
