@@ -1,56 +1,56 @@
 ﻿using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Oswos.Server;
+using Oswos.Server.Http;
 
-namespace Oswos.Tests.Server
+namespace Oswos.Tests.Server.Http
 {
 
     [TestClass]
-    public class HttpStreamTests
+    public class HttpRequestStreamTests
     {
         [TestMethod]
-        public void HttpStream_Parses_Method()
+        public void HttpRequestStream_Parses_Method()
         {
             const string methodAndUri = "Method";
             var methodAndUriBytes = Encoding.UTF8.GetBytes(methodAndUri);
 
-            var httpStream = new HttpStream();
+            var httpStream = new HttpRequestStream();
             httpStream.Write(methodAndUriBytes, 0, methodAndUriBytes.Length);
 
             Assert.AreEqual("Method", httpStream.Method);
         }
 
         [TestMethod]
-        public void HttpStream_Parses_Uri()
+        public void HttpRequestStream_Parses_Uri()
         {
             const string methodAndUri = "bla Uri";
             var methodAndUriBytes = Encoding.UTF8.GetBytes(methodAndUri);
 
-            var httpStream = new HttpStream();
+            var httpStream = new HttpRequestStream();
             httpStream.Write(methodAndUriBytes, 0, methodAndUriBytes.Length);
 
             Assert.AreEqual("Uri", httpStream.Uri);
         }
 
         [TestMethod]
-        public void HttpStream_Parses_Version()
+        public void HttpRequestStream_Parses_Version()
         {
             const string methodAndUri = "bla bla Version";
             var methodAndUriBytes = Encoding.UTF8.GetBytes(methodAndUri);
 
-            var httpStream = new HttpStream();
+            var httpStream = new HttpRequestStream();
             httpStream.Write(methodAndUriBytes, 0, methodAndUriBytes.Length);
 
             Assert.AreEqual("Version", httpStream.HttpVersion);
         }
 
         [TestMethod]
-        public void HttpStream_Skips_No_Data()
+        public void HttpRequestStream_Skips_No_Data()
         {
             const string methodAndUri = "";
             var methodAndUriBytes = Encoding.UTF8.GetBytes(methodAndUri);
 
-            var httpStream = new HttpStream();
+            var httpStream = new HttpRequestStream();
             httpStream.Write(methodAndUriBytes, 0, methodAndUriBytes.Length);
 
             Assert.AreEqual(string.Empty, httpStream.Method);
@@ -60,24 +60,24 @@ namespace Oswos.Tests.Server
 
 
         [TestMethod]
-        public void HttpStream_Reads_Single_Header()
+        public void HttpRequestStream_Reads_Single_Header()
         {
             const string httpMessage = "GET http://localhost:9000/ HTTP/1.1\x0d\x0aTest:OK";
             var httpMessageBytes = Encoding.UTF8.GetBytes(httpMessage);
 
-            var httpStream = new HttpStream();
+            var httpStream = new HttpRequestStream();
             httpStream.Write(httpMessageBytes, 0, httpMessageBytes.Length);
 
             Assert.AreEqual(1, httpStream.Headers.Count);
         }
 
         [TestMethod]
-        public void HttpStream_Parses_Single_Header()
+        public void HttpRequestStream_Parses_Single_Header()
         {
             const string httpMessage = "GET http://localhost:9000/ HTTP/1.1\x0d\x0aTest:OK";
             var httpMessageBytes = Encoding.UTF8.GetBytes(httpMessage);
 
-            var httpStream = new HttpStream();
+            var httpStream = new HttpRequestStream();
             httpStream.Write(httpMessageBytes, 0, httpMessageBytes.Length);
 
             Assert.IsTrue(httpStream.Headers.ContainsKey("Test"));
@@ -85,12 +85,12 @@ namespace Oswos.Tests.Server
         }
 
         [TestMethod]
-        public void HttpStream_Parses_Second_Header()
+        public void HttpRequestStream_Parses_Second_Header()
         {
             const string httpMessage = "GET http://localhost:9000/ HTTP/1.1\x0d\x0aTest:OK\x0d\x0aTestLine2:Also Ok\x0d\x0a";
             var httpMessageBytes = Encoding.UTF8.GetBytes(httpMessage);
 
-            var httpStream = new HttpStream();
+            var httpStream = new HttpRequestStream();
             httpStream.Write(httpMessageBytes, 0, httpMessageBytes.Length);
 
             Assert.IsTrue(httpStream.Headers.ContainsKey("TestLine2"));
@@ -98,12 +98,12 @@ namespace Oswos.Tests.Server
         }
 
         [TestMethod]
-        public void HttpStream_Streams_Body_On_Read()
+        public void HttpRequestStream_Streams_Body_On_Read()
         {
             const string httpMessage = "GET http://localhost:9000/ HTTP/1.1\x0d\x0a\x0d\x0aThis is the body";
             var httpMessageBytes = Encoding.UTF8.GetBytes(httpMessage);
 
-            var httpStream = new HttpStream();
+            var httpStream = new HttpRequestStream();
             httpStream.Write(httpMessageBytes, 0, httpMessageBytes.Length);
 
             var bodyBuffer = new byte[1024];
@@ -116,12 +116,12 @@ namespace Oswos.Tests.Server
 
 
         [TestMethod]
-        public void HttpStream_Streams_Body_On_MultipleWrite()
+        public void HttpRequestStream_Streams_Body_On_MultipleWrite()
         {
             string httpMessage = "GET http://localhost:9000/ HTTP/1.1\x0d\x0a\x0d\x0aThis ";
             var httpMessageBytes = Encoding.UTF8.GetBytes(httpMessage);
 
-            var httpStream = new HttpStream();
+            var httpStream = new HttpRequestStream();
             httpStream.Write(httpMessageBytes, 0, httpMessageBytes.Length);
 
             // Second write

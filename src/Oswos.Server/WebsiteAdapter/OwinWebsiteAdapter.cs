@@ -7,10 +7,11 @@ using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 using NLog;
+using Oswos.Server.Http;
 
 namespace Oswos.Server.WebsiteAdapter
 {
-    [ServiceBehavior(IncludeExceptionDetailInFaults = true, InstanceContextMode = InstanceContextMode.Single, ConcurrencyMode = ConcurrencyMode.Multiple)]
+    [ServiceBehavior(IncludeExceptionDetailInFaults = true, InstanceContextMode = InstanceContextMode.PerCall, ConcurrencyMode = ConcurrencyMode.Multiple)]
     public class OwinWebsiteAdapter : IWebsiteAdapter
     {
         private readonly object _startupClassInstance;
@@ -23,24 +24,25 @@ namespace Oswos.Server.WebsiteAdapter
             _startupClassInstance = Activator.CreateInstance(_startupClassType);
         }
 
-        public Stream ParseRequest(HttpStream stream)
+        public HttpResponseStream ParseRequest(HttpRequestStream requestStream)
         {
+            Logger.Debug("Sending Request to:" + _startupClassType.Name);
             var environment = new Dictionary<string, object>();
 
-            environment.Add("owin.RequestMethod", stream.Method);
-            environment.Add("owin.RequestPath", stream.Uri);
+            environment.Add("owin.RequestMethod", requestStream.Method);
+            environment.Add("owin.RequestPath", requestStream.Uri);
             environment.Add("owin.RequestScheme", "http");
 
             environment.Add("owin.RequestPathBase", string.Empty);
             environment.Add("owin.RequestQueryString", string.Empty);
-            environment.Add("owin.RequestBody", stream);
+            environment.Add("owin.RequestBody", requestStream);
 
             var headers = new Dictionary<string, string[]>(StringComparer.Ordinal);
-            foreach (var headerKey in stream.Headers.Keys)
+            foreach (var headerKey in requestStream.Headers.Keys)
             {
                 headers.Add(
                     headerKey,
-                    stream.Headers[headerKey].Split(',').Select(a => a.Trim()).ToArray());
+                    requestStream.Headers[headerKey].Split(',').Select(a => a.Trim()).ToArray());
             }
             environment.Add("owin.RequestHeaders", headers);
 
@@ -55,19 +57,22 @@ namespace Oswos.Server.WebsiteAdapter
             var responseReason = Get<string>(environment, "owin.ResponseReasonPhrase");
             var responseBodyStream = Get<MemoryStream>(environment, "owin.ResponseBody");
 
-            var responseStream = new MemoryStream();
-            WriteData(responseStream, stream.HttpVersion + " " + responseStatusCode + " " + responseReason + "\x0d\x0a");
+            var responseStream = new HttpResponseStream();
+            responseStream.HttpVersion = requestStream.HttpVersion;
+            responseStream.StatusCode = responseStatusCode;
+            responseStream.Reason = responseReason;
+
             foreach (var header in responseHeaders.Keys)
             {
-                WriteData(responseStream, header + ":" + string.Join(",", responseHeaders[header]) + "\x0d\x0a");
+                responseStream.Headers.Add(header, string.Join(",", responseHeaders[header]));
             }
 
-            WriteData(responseStream, "Content-Length" + ":" + responseBodyStream.Length + "\x0d\x0a");
-            WriteData(responseStream, "\x0d\x0a");
-
-            responseBodyStream.Position = 0;
-            responseBodyStream.CopyTo(responseStream);
-            responseStream.Position = 0;
+            if (responseBodyStream.CanRead)
+            {
+                responseBodyStream.Position = 0;
+                responseBodyStream.CopyTo(responseStream);
+            }
+            Logger.Debug("Sending Fishished");
             return responseStream;
         }
 
@@ -88,12 +93,6 @@ namespace Oswos.Server.WebsiteAdapter
             }
         }
 
-        private void WriteData(MemoryStream stream, string data)
-        {
-            var dataBytes = Encoding.UTF8.GetBytes(data);
-            stream.Write(dataBytes, 0, dataBytes.Length);
-        }
-
         private static T Get<T>(IDictionary<string, object> env, string key)
         {
             object value;
@@ -110,7 +109,7 @@ namespace Oswos.Server.WebsiteAdapter
             if (!Directory.Exists(path))
                 throw new DirectoryNotFoundException(path);
 
-            foreach (string file in Directory.GetFiles(path, "*.dll"))
+            foreach (string file in Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories))
             {
                 try
                 {
@@ -125,28 +124,6 @@ namespace Oswos.Server.WebsiteAdapter
                 }
                 catch
                 {
-                }
-            }
-
-            var binDirectory = Path.Combine(path, "bin");
-            if (Directory.Exists(binDirectory))
-            {
-                foreach (string file in Directory.GetFiles(binDirectory, "*.dll"))
-                {
-                    try
-                    {
-                        Assembly assembly = Assembly.LoadFile(file);
-                        foreach (var type in assembly.GetTypes())
-                        {
-                            if (type.FullName.EndsWith("Startup") && type.GetMethod("ProcessRequest") != null)
-                            {
-                                return type;
-                            }
-                        }
-                    }
-                    catch
-                    {
-                    }
                 }
             }
 

@@ -1,5 +1,6 @@
 using System.IO;
 using System.ServiceModel;
+using Oswos.Server.Http;
 
 namespace Oswos.Server.WebsiteAdapter
 {
@@ -7,6 +8,6 @@ namespace Oswos.Server.WebsiteAdapter
     public interface IWebsiteAdapter
     {
         [OperationContract]
-        Stream ParseRequest(HttpStream stream);
+        HttpResponseStream ParseRequest(HttpRequestStream requestStream);
     }
 }

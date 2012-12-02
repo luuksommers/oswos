@@ -4,13 +4,16 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace Oswos.Server
+namespace Oswos.Server.Http
 {
     [DataContract]
-    public class HttpStream : Stream
+    public class HttpRequestStream : Stream
     {
         public const string CrLf = "\x0d\x0a";
         private bool _firstRead = true;
+
+        public delegate void HeadersLoaded(object source);
+        public event HeadersLoaded OnHeadersLoaded;
 
         [DataMember]
         public string Method { get; private set; }
@@ -77,8 +80,13 @@ namespace Oswos.Server
                             header.Split(':')[0],
                             header.Split(':')[1].Trim());
                     }
-                }
 
+                    if (OnHeadersLoaded != null)
+                    {
+                        OnHeadersLoaded(this);
+                    }
+                }
+                
                 bodyStart = streamData.IndexOf(CrLf + CrLf, StringComparison.Ordinal) + 4;
             }
 

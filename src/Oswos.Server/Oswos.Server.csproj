@@ -56,16 +56,29 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Http\HttpRequestStream.cs" />
+    <Compile Include="Http\HttpSocketConnectionFactory.cs" />
+    <Compile Include="Http\HttpStreamRouter.cs" />
+    <Compile Include="StreamRouterException.cs" />
+    <Compile Include="ISocketConnectionFactory.cs" />
+    <Compile Include="IStreamRouter.cs" />
+    <Compile Include="Tcp\BufferPool.cs" />
+    <Compile Include="Tcp\DataEventArgs.cs" />
     <Compile Include="DictionaryExtensions.cs" />
-    <Compile Include="HttpNetworkStreamProcessor.cs" />
-    <Compile Include="HttpStream.cs" />
+    <Compile Include="Tcp\ExtensionMethods.cs" />
+    <Compile Include="Http\HttpSocketConnection.cs" />
+    <Compile Include="Http\HttpResponseStream.cs" />
+    <Compile Include="PortListener.cs" />
+    <Compile Include="Tcp\SocketArgsPool.cs" />
+    <Compile Include="Tcp\SocketConnection.cs" />
+    <Compile Include="Tcp\SocketEventArgs.cs" />
+    <Compile Include="Tcp\SocketListener.cs" />
     <Compile Include="WebsiteAdapter\IWebsiteAdapter.cs" />
-    <Compile Include="INetworkStreamProcessor.cs" />
+    <Compile Include="ISocketConnection.cs" />
     <Compile Include="WebsiteAdapter\OwinWebsiteAdapter.cs" />
     <Compile Include="WebsiteAdapter\OwinConstants.cs" />
     <Compile Include="WebsiteEndpoint\WebsiteEndpoint.cs" />
     <Compile Include="WebsiteEndpoint\WebsiteEndpointServer.cs" />
-    <Compile Include="TcpServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

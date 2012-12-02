@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using NLog;
 using Oswos.Repository;
 using Oswos.Server;
+using Oswos.Server.Http;
 using Oswos.Server.WebsiteEndpoint;
 
 namespace Oswos.Console
@@ -30,18 +32,24 @@ namespace Oswos.Console
             var endpointHost = new WebsiteEndpointServer(repository);
             endpointHost.Start();
 
-            var server = new TcpServer(new HttpNetworkStreamProcessor(repository));
-            server.Start(DefaultPort);
+            var server = new PortListener(new HttpSocketConnectionFactory(new HttpStreamRouter(repository)));
+            server.Start(80);
 
             logger.Info("Listening at port {0}", DefaultPort);
             logger.Info("Open a browser and connect to http://localhost:{0}", DefaultPort);
-            logger.Info(string.Empty);
 
-            logger.Info("Press enter to shutdown");
-            System.Console.ReadLine();
+            logger.Info("Close window to shutdown");
 
-            endpointHost.Stop();
-            server.Stop();
+            while (true)
+            {
+                Thread.Sleep(10000); // You should make a connection attempt in 10 seconds.
+            }
+
+            // Console readline has a bug
+            //System.Console.ReadLine();
+
+            //endpointHost.Stop();
+            //server.Stop();
         }
     }
 }

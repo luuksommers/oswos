@@ -35,6 +35,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Moq">
+      <HintPath>..\..\dependencies\Moq.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <Choose>
@@ -50,8 +53,11 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="Server\HttpStreamTests.cs" />
-    <Compile Include="Server\TcpServerTests.cs" />
+    <Compile Include="Server\Http\HttpResponseStreamTests.cs" />
+    <Compile Include="Server\TestWebsiteRepository.cs" />
+    <Compile Include="Server\Tcp\BufferPoolTests.cs" />
+    <Compile Include="Server\Http\HttpRequestStreamTests.cs" />
+    <Compile Include="Server\Http\HttpStreamRouterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -63,6 +69,14 @@
       <Project>{6B913008-3478-44CD-87FE-D7CB5FB9572B}</Project>
       <Name>Oswos.Server</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Repository\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\oswos.fw.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
