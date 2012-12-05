@@ -12,9 +12,6 @@ namespace Oswos.Server.Http
         public const string CrLf = "\x0d\x0a";
         private bool _firstRead = true;
 
-        public delegate void HeadersLoaded(object source);
-        public event HeadersLoaded OnHeadersLoaded;
-
         [DataMember]
         public string Method { get; private set; }
         [DataMember]
@@ -79,11 +76,6 @@ namespace Oswos.Server.Http
                         Headers.AddOrUpdate(
                             header.Split(':')[0],
                             header.Split(':')[1].Trim());
-                    }
-
-                    if (OnHeadersLoaded != null)
-                    {
-                        OnHeadersLoaded(this);
                     }
                 }
                 

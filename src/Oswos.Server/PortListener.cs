@@ -39,8 +39,8 @@ namespace Oswos.Server
             _logger.Debug("Connection from {0}", e.Socket.RemoteEndPoint.ToString());
 
             var connection = _socketConnectionFactory.Create(e.Socket);
-            _openConnections.Add(connection);
-            connection.Disconnected += () => _openConnections.Remove(connection);
+            //_openConnections.Add(connection);
+            //connection.Disconnected += () => _openConnections.Remove(connection);
             connection.ListenForData();
         }
     }

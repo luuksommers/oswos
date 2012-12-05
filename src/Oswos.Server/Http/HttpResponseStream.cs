@@ -109,7 +109,9 @@ namespace Oswos.Server.Http
         public override long Position
         {
             get { return _bodyStream.Position; }
-            set { _bodyStream.Position = value; }
+            set { _bodyStream.Position = value;
+                _firstRead = true;
+            }
         }
     }
 }

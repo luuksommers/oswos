@@ -36,6 +36,7 @@ namespace Oswos.Server.WebsiteEndpoint
                         ApplicationName = website.Name,
                         ApplicationBase = website.Path,
                         PrivateBinPath = Path.Combine(website.Path, "bin" ),
+                        PrivateBinPathProbe = string.Empty,
                         ConfigurationFile = Path.Combine(website.Path, "Web.config")
                     };
 

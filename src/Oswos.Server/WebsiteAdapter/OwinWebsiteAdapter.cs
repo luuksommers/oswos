@@ -29,12 +29,19 @@ namespace Oswos.Server.WebsiteAdapter
             Logger.Debug("Sending Request to:" + _startupClassType.Name);
             var environment = new Dictionary<string, object>();
 
+            var requestPath = requestStream.Uri;
+            var querystring = string.Empty;
+            if (requestStream.Uri.Contains("?"))
+            {
+                requestPath = requestStream.Uri.Split('?')[0];
+                querystring = requestStream.Uri.Split('?')[1];
+            }
             environment.Add("owin.RequestMethod", requestStream.Method);
-            environment.Add("owin.RequestPath", requestStream.Uri);
+            environment.Add("owin.RequestPath", requestPath);
             environment.Add("owin.RequestScheme", "http");
 
             environment.Add("owin.RequestPathBase", string.Empty);
-            environment.Add("owin.RequestQueryString", string.Empty);
+            environment.Add("owin.RequestQueryString", querystring);
             environment.Add("owin.RequestBody", requestStream);
 
             var headers = new Dictionary<string, string[]>(StringComparer.Ordinal);

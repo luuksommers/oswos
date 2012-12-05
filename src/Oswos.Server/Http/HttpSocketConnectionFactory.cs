@@ -1,7 +1,7 @@
 using System.Net.Sockets;
-using Oswos.Server.Http;
+using Oswos.Server.Tcp;
 
-namespace Oswos.Server
+namespace Oswos.Server.Http
 {
     public class HttpSocketConnectionFactory : ISocketConnectionFactory
     {
@@ -14,7 +14,7 @@ namespace Oswos.Server
 
         public ISocketConnection Create(Socket e)
         {
-            var connection = new HttpSocketConnection(e);
+            var connection = new SocketConnection(e);
             _router.Route(connection);
             return connection;
         }

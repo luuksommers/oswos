@@ -12,15 +12,6 @@ namespace Oswos.Console
     class Program
     {
         private const int DefaultPort = 80;
-        static string GetSolutionFolder()
-        {
-            var directory = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory);
-            do
-            {
-                directory = directory.Parent;
-            } while (directory != null && directory.Name != "src");
-            return directory == null ? string.Empty : directory.FullName;
-        }
 
         static void Main(string[] args)
         {
@@ -33,7 +24,7 @@ namespace Oswos.Console
             endpointHost.Start();
 
             var server = new PortListener(new HttpSocketConnectionFactory(new HttpStreamRouter(repository)));
-            server.Start(80);
+            server.Start(DefaultPort);
 
             logger.Info("Listening at port {0}", DefaultPort);
             logger.Info("Open a browser and connect to http://localhost:{0}", DefaultPort);
