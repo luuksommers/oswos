@@ -10,7 +10,8 @@ namespace Oswos.Server.Http
     public class HttpRequestStream : Stream
     {
         public const string CrLf = "\x0d\x0a";
-        private bool _firstRead = true;
+        private bool _headersRead = false;
+        private string _headerData;
 
         [DataMember]
         public string Method { get; private set; }
@@ -46,19 +47,29 @@ namespace Oswos.Server.Http
         public override void Write(byte[] buffer, int offset, int count)
         {
             var bodyStart = 0;
-            
-            if (_firstRead)
+
+            if (!_headersRead)
             {
-                _firstRead = false;
                 var streamData = Encoding.UTF8.GetString(buffer, 0, count);
-                var httpLines = streamData.Split(new[] {CrLf}, StringSplitOptions.None);
+                _headerData += streamData;
+                bodyStart = _headerData.IndexOf(CrLf + CrLf, StringComparison.Ordinal);
+                if (bodyStart >= 0)
+                {
+                    _headersRead = true;
+                    _headerData = _headerData.Substring(0, bodyStart);
+                }
+            }
+
+            if (_headersRead)
+            {
+                var httpLines = _headerData.Split(new[] { CrLf }, StringSplitOptions.None);
                 if (httpLines.Length > 0)
                 {
                     var requestLine = httpLines[0];
                     var splitRequest = requestLine.Split(' ');
 
-                    Method      = splitRequest.Length > 0 ? splitRequest[0] : string.Empty;
-                    Uri         = splitRequest.Length > 1 ? splitRequest[1] : string.Empty;
+                    Method = splitRequest.Length > 0 ? splitRequest[0] : string.Empty;
+                    Uri = splitRequest.Length > 1 ? splitRequest[1] : string.Empty;
                     HttpVersion = splitRequest.Length > 2 ? splitRequest[2] : string.Empty;
                 }
 
@@ -72,19 +83,17 @@ namespace Oswos.Server.Http
                             break;
 
                         var header = httpLines[headerLineIndex];
-                        
+
                         Headers.AddOrUpdate(
                             header.Split(':')[0],
                             header.Split(':')[1].Trim());
                     }
                 }
-                
-                bodyStart = streamData.IndexOf(CrLf + CrLf, StringComparison.Ordinal) + 4;
             }
 
-            if (bodyStart >= 0 && count - bodyStart > 0)
+            if (bodyStart >= 0 && count - (bodyStart + 4) > 0)
             {
-                _bodyStream.Write(buffer, bodyStart, count - bodyStart);
+                _bodyStream.Write(buffer, (bodyStart + 4), count - (bodyStart + 4));
             }
         }
 

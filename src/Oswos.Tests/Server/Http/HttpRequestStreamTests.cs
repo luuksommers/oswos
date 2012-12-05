@@ -53,16 +53,16 @@ namespace Oswos.Tests.Server.Http
             var httpStream = new HttpRequestStream();
             httpStream.Write(methodAndUriBytes, 0, methodAndUriBytes.Length);
 
-            Assert.AreEqual(string.Empty, httpStream.Method);
-            Assert.AreEqual(string.Empty, httpStream.Uri);
-            Assert.AreEqual(string.Empty, httpStream.HttpVersion);
+            Assert.AreEqual(null, httpStream.Method);
+            Assert.AreEqual(null, httpStream.Uri);
+            Assert.AreEqual(null, httpStream.HttpVersion);
         }
 
 
         [TestMethod]
         public void HttpRequestStream_Reads_Single_Header()
         {
-            const string httpMessage = "GET http://localhost:9000/ HTTP/1.1\x0d\x0aTest:OK";
+            const string httpMessage = "GET http://localhost:9000/ HTTP/1.1\x0d\x0aTest:OK\x0d\x0a\x0d\x0a";
             var httpMessageBytes = Encoding.UTF8.GetBytes(httpMessage);
 
             var httpStream = new HttpRequestStream();
@@ -74,7 +74,7 @@ namespace Oswos.Tests.Server.Http
         [TestMethod]
         public void HttpRequestStream_Parses_Single_Header()
         {
-            const string httpMessage = "GET http://localhost:9000/ HTTP/1.1\x0d\x0aTest:OK";
+            const string httpMessage = "GET http://localhost:9000/ HTTP/1.1\x0d\x0aTest:OK\x0d\x0a\x0d\x0a";
             var httpMessageBytes = Encoding.UTF8.GetBytes(httpMessage);
 
             var httpStream = new HttpRequestStream();
@@ -87,7 +87,7 @@ namespace Oswos.Tests.Server.Http
         [TestMethod]
         public void HttpRequestStream_Parses_Second_Header()
         {
-            const string httpMessage = "GET http://localhost:9000/ HTTP/1.1\x0d\x0aTest:OK\x0d\x0aTestLine2:Also Ok\x0d\x0a";
+            const string httpMessage = "GET http://localhost:9000/ HTTP/1.1\x0d\x0aTest:OK\x0d\x0aTestLine2:Also Ok\x0d\x0a\x0d\x0a";
             var httpMessageBytes = Encoding.UTF8.GetBytes(httpMessage);
 
             var httpStream = new HttpRequestStream();
