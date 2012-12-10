@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Net.Sockets;
 
-namespace Oswos.Server
+namespace Oswos.Server.Tcp
 {
     /// <summary>
     /// Pools SocketAsyncEventArgs objects to avoid repeated allocations.
     /// </summary>
     public class SocketArgsPool : IDisposable
     {
-        public const int   MaxCapacity = 100;
+        public const int MaxCapacity = 500;
         private static SocketArgsPool _instance;
         private static readonly object _instanceLock = new object();
         private readonly Stack<SocketAsyncEventArgs> _argsPool;

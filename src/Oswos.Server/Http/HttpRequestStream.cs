@@ -24,6 +24,11 @@ namespace Oswos.Server.Http
         [DataMember]
         private MemoryStream _bodyStream = new MemoryStream();
 
+        public bool HeadersRead
+        {
+            get { return _headersRead; }
+        }
+
         public override void Flush()
         {
             _bodyStream.Flush();

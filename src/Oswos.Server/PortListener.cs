@@ -9,9 +9,9 @@ namespace Oswos.Server
     public class PortListener
     {
         private readonly ISocketConnectionFactory _socketConnectionFactory;
-        private readonly List<ISocketConnection> _openConnections = new List<ISocketConnection>();
         private SocketListener _socketListener;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        private readonly ConnectionMonitor _monitor = new ConnectionMonitor();
 
         public PortListener(ISocketConnectionFactory socketConnectionFactory)
         {
@@ -20,7 +20,7 @@ namespace Oswos.Server
 
         public void Start(int port)
         {
-            _socketListener = new SocketListener(IPAddress.Any, port, 25); // 25 pending connections should be enough
+            _socketListener = new SocketListener(IPAddress.Any, port, 50); // 50 pending connections should be enough
             _socketListener.SocketConnected += SocketListenerSocketConnected;
             _socketListener.Start();
         }
@@ -39,8 +39,8 @@ namespace Oswos.Server
             _logger.Debug("Connection from {0}", e.Socket.RemoteEndPoint.ToString());
 
             var connection = _socketConnectionFactory.Create(e.Socket);
-            //_openConnections.Add(connection);
-            //connection.Disconnected += () => _openConnections.Remove(connection);
+            _monitor.IncrementNumberOfConnections();
+            connection.Disconnected += () => _monitor.DecrementNumberOfConnections();
             connection.ListenForData();
         }
     }

@@ -60,6 +60,7 @@
     <Compile Include="Http\HttpSocketConnectionFactory.cs" />
     <Compile Include="Http\HttpStreamRouter.cs" />
     <Compile Include="Http\HttpStreamRouteObject.cs" />
+    <Compile Include="Http\WebsiteNotFoundException.cs" />
     <Compile Include="StreamRouterException.cs" />
     <Compile Include="ISocketConnectionFactory.cs" />
     <Compile Include="IStreamRouter.cs" />

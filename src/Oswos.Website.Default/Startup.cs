@@ -5,11 +5,17 @@ namespace Oswos.Website.Default
 {
     public class Startup
     {
-        public Task ProcessRequest(IDictionary<string, object> environment)
+        private static readonly Nancy.Hosting.Owin.NancyOwinHost owinHost;
+
+        static Startup()
         {
             var bootstrapper = new CustomBootstrapper();
-            var nancyOwinHost = new Nancy.Hosting.Owin.NancyOwinHost(bootstrapper);
-            return nancyOwinHost.ProcessRequest(environment);
+            owinHost = new Nancy.Hosting.Owin.NancyOwinHost(bootstrapper);
+        }
+
+        public Task ProcessRequest(IDictionary<string, object> environment)
+        {
+            return owinHost.ProcessRequest(environment);
         }
     }
 }

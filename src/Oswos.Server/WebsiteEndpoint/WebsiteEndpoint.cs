@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.ServiceModel;
 using Oswos.Server.WebsiteAdapter;
 
@@ -27,6 +23,9 @@ namespace Oswos.Server.WebsiteEndpoint
 
         private ServiceHost CreateServiceHost(Type hostType, string endpointUrl)
         {
+            // Just load the instance for the first time so nancy statics can be loaded
+            //var instance = (IWebsiteAdapter)Activator.CreateInstance(hostType);
+
             var serviceHost = new ServiceHost(hostType);
             serviceHost.AddServiceEndpoint(
                 typeof(IWebsiteAdapter),
@@ -40,20 +39,6 @@ namespace Oswos.Server.WebsiteEndpoint
         {
             _serviceHost.Close();
             _serviceHost = null;
-        }
-
-        private static IEnumerable<string> GetBinFolders()
-        {
-            //TODO: The AppDomain.CurrentDomain.BaseDirectory usage is not correct in 
-            //some cases. Need to consider PrivateBinPath too
-            List<string> toReturn = new List<string>();
-            //slightly dirty - needs reference to System.Web.  Could always do it really
-            //nasty instead and bind the property by reflection!
-
-                //TODO: as before, this is where the PBP would be handled.
-            toReturn.Add(AppDomain.CurrentDomain.BaseDirectory);
-
-            return toReturn;
         }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ServiceModel;
-using System.Threading.Tasks;
-using NLog;
 using Oswos.Repository;
 using Oswos.Server.Tcp;
 using Oswos.Server.WebsiteAdapter;
@@ -11,14 +9,12 @@ namespace Oswos.Server.Http
 {
     public class HttpStreamRouter : IStreamRouter
     {
-        private readonly IWebsiteRepository _repository;
         private static readonly Dictionary<string, ChannelFactory<IWebsiteAdapter>> FactoryCache =
             new Dictionary<string, ChannelFactory<IWebsiteAdapter>>();
         public List<HttpStreamRouteObject> objects = new List<HttpStreamRouteObject>();
 
         public HttpStreamRouter(IWebsiteRepository repository)
         {
-            _repository = repository;
             foreach (var website in repository.GetAll())
             {
                 if (!FactoryCache.ContainsKey(website.HostName))
@@ -44,11 +40,16 @@ namespace Oswos.Server.Http
 
             var streamRouteObject = new HttpStreamRouteObject(httpSocketConnection, this);
             objects.Add(streamRouteObject);
+            httpSocketConnection.Disconnected += () => objects.Remove(streamRouteObject);
         }
 
-        public IWebsiteAdapter GetNewEndpointFromHost(string host)
+        public IWebsiteAdapter CreateWebsiteEndpoint(string host)
         {
             var website = new WebsiteRepository().GetByHost(host);
+            if (website == null)
+            {
+                throw new WebsiteNotFoundException(host);
+            }
             return FactoryCache[website.HostName].CreateChannel();
         }
     }

@@ -54,7 +54,7 @@ namespace Oswos.Server.WebsiteAdapter
             environment.Add("owin.RequestHeaders", headers);
 
             environment.Add("owin.ResponseHeaders", new Dictionary<string, string[]>(StringComparer.Ordinal));
-            environment.Add("owin.ResponseBody", new MemoryStream());
+            environment.Add("owin.ResponseBody", new HttpResponseStream());
 
             InvokeStartupClass(environment);
 
@@ -62,9 +62,8 @@ namespace Oswos.Server.WebsiteAdapter
             var responseHeaders = Get<IDictionary<string, String[]>>(environment, "owin.ResponseHeaders");
             var responseStatusCode = Get<int>(environment, "owin.ResponseStatusCode");
             var responseReason = Get<string>(environment, "owin.ResponseReasonPhrase");
-            var responseBodyStream = Get<MemoryStream>(environment, "owin.ResponseBody");
+            var responseStream = Get<HttpResponseStream>(environment, "owin.ResponseBody");
 
-            var responseStream = new HttpResponseStream();
             responseStream.HttpVersion = requestStream.HttpVersion;
             responseStream.StatusCode = responseStatusCode;
             responseStream.Reason = responseReason;
@@ -74,11 +73,6 @@ namespace Oswos.Server.WebsiteAdapter
                 responseStream.Headers.Add(header, string.Join(",", responseHeaders[header]));
             }
 
-            if (responseBodyStream.CanRead)
-            {
-                responseBodyStream.Position = 0;
-                responseBodyStream.CopyTo(responseStream);
-            }
             Logger.Debug("Sending Fishished");
             return responseStream;
         }
